@@ -1,5 +1,23 @@
 from datetime import datetime
+from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+class ErrorDetail(BaseModel):
+    location: list[str | int]
+    code: str
+    message: str
+
+class ErrorBody(BaseModel):
+    code: str
+    message: str
+    details: list[ErrorDetail] = Field(default_factory=list)
+
+class ErrorResponse(BaseModel):
+    error: ErrorBody
+
+class HealthOut(BaseModel):
+    status: Literal["ok"] = "ok"
+    database: Literal["ok"] = "ok"
 
 class Signup(BaseModel):
     model_config = ConfigDict(extra="forbid")
