@@ -7,9 +7,10 @@ KANT CH3 백엔드 아키텍처 & API 설계 과제. FastAPI, SQLAlchemy 비동�
 - GitHub: <https://github.com/Cocode96/kant-ch3-board-api>
 - EC2 서비스 / Swagger: <https://43.201.32.243/docs>
 - OpenAPI: <https://43.201.32.243/openapi.json>
-- 2026-11-17 실제 배포 서버의 HTTPS API 검증 27개 통과. 기존 가입/로그인과 작성자 권한, 게시글 CRUD를 확인했다.
-- 로컬 보완 코드의 회귀 테스트 10개 통과. 공통 오류 모델과 `/health`는 보완 코드에 있으며 현재 EC2에는 아직 반영하지 않았다.
-- 서버 내부 PostgreSQL 연결과 프로세스 재시작 후 데이터 보존은 SSH 접속이 막혀 확인하지 못했다. 실제 API 검증과 구분한다.
+- 2026-11-17 KST, 기존 EC2에 공통 오류 모델과 `/health`를 포함한 보완 코드 배포 완료. 검증 시 배포 커밋은 `566b98a`다.
+- 기존 배포의 HTTPS API 27개, 보완 코드 배포 후 API 21개, 서버 인증/데이터 정리 검증 8개가 각각 통과했다.
+- 회귀 테스트 10개는 로컬 Python 3.13.14와 EC2 Python 3.15.2에서 각각 통과했다. 이 테스트의 DB는 메모리 SQLite이며, 실제 PostgreSQL 검증은 별도로 수행했다.
+- 실제 PostgreSQL 16.15 연결, 앱 서비스 재시작 후 게시글 보존, DB 백업의 임시 DB 복원과 행 수 일치를 확인했다. 검증 게시글과 검증 회원 2개는 정리했고 기존 회원은 보존했다.
 
 ## 실제 서비스 검증
 
@@ -26,12 +27,20 @@ KANT CH3 백엔드 아키텍처 & API 설계 과제. FastAPI, SQLAlchemy 비동�
 | 공백 제목, 작성자 ID 주입, 잘못된 페이지 매개변수 | 422 |
 | 잘못된 JWT | 401 |
 | A의 검증 게시글 삭제와 재조회 | 204 / 404, 검증 게시글 정리 완료 |
+| 보완 코드의 `/health` | 200, `status=ok`, `database=ok` |
+| 보완 코드의 401/403/404/405/422 | 공통 오류 모델, 인증 헤더 유지, 입력값 비노출 |
+| 실제 DB 드라이버와 서버 버전 | `postgresql+asyncpg`, PostgreSQL 16.15 |
+| 앱 서비스 재시작 후 A/B 재로그인과 상세 조회 | 로그인 200, 수정한 제목과 작성자 유지 |
+| 서버 키로 정상 서명한 만료 JWT | 401, `unauthorized` |
+| 검증 회원 정리 후 로그인 | 두 계정 모두 401, 기존 회원과 게시글 보존 |
 
-[27개 API 검증 결과](evidence/live-api-verification.json)
+검증 기록은 실행 단계를 구분한다. [초기 배포 API 27개](evidence/live-api-verification.json)는 기존 `99ae907` 코드에서 실행했다. [보완 코드 배포 후 API 21개](evidence/updated-deployment-verification.json), [서버 인증과 정리 8개](evidence/server-runtime-verification.json), [최종 HTTPS 확인](evidence/final-public-verification.json)은 `566b98a` 배포 후의 기록이다. 계정 이메일, 비밀번호, 토큰과 비밀키는 공개하지 않는다.
 
 ![EC2에서 열린 실제 Swagger UI](evidence/ec2-swagger.jpg)
 
-위 캡처와 실제 검증은 배포되어 있던 기존 API를 대상으로 했다. 이 README의 공통 오류 모델과 `/health` 설명은 로컬 보완 코드 기준이다. 테스트 회원 두 개는 회원 삭제 API가 없어 서버 접속 후 정리할 대상으로 기록했다. 새 세션 조회는 확인했지만 서버 재시작 검증은 하지 않았다.
+![Swagger Try it out으로 확인한 실제 DB 상태 200 응답](evidence/ec2-health.jpg)
+
+캡처는 보완 코드 배포 후의 실제 HTTPS 화면이다. 만료 토큰 검증은 서버의 실제 서명 키로 만료 시각을 과거로 지정한 토큰을 만들어 수행했으며, 같은 키로 서명한 유효 토큰이 입력 검증 단계까지 도달하는 것도 확인했다. 30분을 기다린 시험은 아니다. 재시작 검증은 EC2 전체 재부팅이 아니라 `kantboard.service` 재시작이다.
 
 ## 실행
 
@@ -132,8 +141,30 @@ uv run --locked python -B test_api.py
 
 테스트는 `BOARD_TESTING=1`과 메모리 SQLite를 사용하므로 실제 회원이나 게시글을 변경하지 않는다. 회원 A와 B의 가입/로그인, A의 CRUD, B의 수정/삭제 403과 원본 보존, 잘못된 입력, 중복 이메일, 만료 토큰, 작성자 ID 위조 거절, Swagger 명세를 확인한다.
 
-추가 회귀 검증은 공통 오류 모델과 인증 헤더, 입력값/내부 오류 비노출, DB 상태 확인의 성공/실패, 해시 연산의 스레드 분리, 과도한 비밀번호 길이의 사전 차단, 무작위 salt와 잘못된 해시 처리, OpenAPI 오류 스키마를 포함한다. Python 3.13.14에서 10개 테스트를 통과했다. Starlette의 httpx TestClient 관련 deprecation 경고가 한 번 출력되며 실패는 없었다.
+추가 회귀 검증은 공통 오류 모델과 인증 헤더, 입력값/내부 오류 비노출, DB 상태 확인의 성공/실패, 해시 연산의 스레드 분리, 과도한 비밀번호 길이의 사전 차단, 무작위 salt와 잘못된 해시 처리, OpenAPI 오류 스키마를 포함한다. 로컬 Python 3.13.14와 EC2 Python 3.15.2에서 각각 10개 테스트를 통과했다. Starlette의 httpx TestClient 관련 deprecation 경고가 출력되며 실패는 없었다.
 
-운영 DB는 PostgreSQL asyncpg 연결만 허용한다. 요청별 세션과 `pool_pre_ping`을 사용하며 실패한 트랜잭션은 rollback한다. EC2에서는 기존 프로세스 관리자와 프록시 설정을 먼저 확인하고, 배포 전 DB 백업과 현재 버전을 보존해야 한다. 환경변수와 DB 파일을 코드 배포로 덮어쓰지 않는다.
+운영 DB는 PostgreSQL asyncpg 연결만 허용한다. 요청별 세션과 `pool_pre_ping`을 사용하며 실패한 트랜잭션은 rollback한다.
 
-외부 EC2 HTTPS 접속과 기존 API 동작은 위의 실제 검증에서 확인했다. 보완 코드 배포와 서버 내부 확인은 남아 있다. 파일 업로드, 캐시, 부하 테스트는 구현/검증 범위에 포함하지 않는다.
+## 기존 EC2 배포 구성과 복구
+
+```mermaid
+flowchart LR
+    Client[브라우저 / API 클라이언트] -->|HTTPS 443| Nginx[Nginx]
+    Nginx -->|127.0.0.1:8000| API[Uvicorn / FastAPI]
+    API -->|asyncpg / 127.0.0.1:5432| DB[(PostgreSQL)]
+    Systemd[systemd kantboard.service] -. 실행과 재시작 .-> API
+```
+
+기존 Ubuntu 24.04 EC2와 `kantboard.service`를 그대로 사용했다. 앱은 전용 `kantboard` 사용자로 실행하며 DB와 Uvicorn은 루프백 주소에서 수신한다. Nginx 설정 검사와 서비스 실행 상태를 확인했다. 환경변수는 Git 밖의 `/etc/kantboard.env`에 두고 root 전용 권한 `600`으로 관리한다.
+
+[서버 명령 실행 결과 요약](evidence/operations-verification.json)에 회귀 테스트, 백업 복원, 재시작과 서비스 상태를 기록했다. 이 파일은 실제 명령 출력을 정리한 기록이며 API 자동 검증 JSON과 구분한다.
+
+배포 전 `pg_dump` 백업, 기존 소스, 서비스 설정과 환경 설정을 서버의 root 전용 백업 디렉터리에 보관했다. DB 백업은 별도의 임시 DB에 복원해 회원 4행과 게시글 0행이 원본과 일치하는지 확인한 후 임시 DB만 삭제했다. 이후 기존 Git 작업 트리에서 fast-forward 배포하고 서비스를 재시작했다. 스키마와 의존성은 변경하지 않았다.
+
+게시글을 새로 저장한 다음 서비스를 다시 시작해 프로세스 교체와 DB의 게시글 1행 보존을 확인했다. HTTPS 상세 조회에서도 수정 내용과 작성자가 유지됐고 검증 후 해당 글을 삭제했다. 검증 회원은 정확한 ID/이메일과 작성 글이 없음을 확인한 뒤 트랜잭션으로 2개만 삭제했다. 원래 회원 2개는 그대로 남았다.
+
+장애 시에는 먼저 `journalctl -u kantboard.service`와 `/health`를 확인한다. 이번 배포의 이전 버전은 `99ae907`이며 서버 백업의 `previous-revision.txt`와 소스 아카이브에 기록돼 있다. 소스 복구가 필요하면 서비스를 멈추고 해당 버전을 복원한 뒤 다시 시작한다. DB 복원은 현재 데이터를 별도로 백업한 후 필요할 때만 수행한다. 이번에는 임시 DB 복원 검증까지 수행했으며 운영 DB를 과거 상태로 되돌리지는 않았다.
+
+HTTPS는 인증서 검증을 끄지 않은 상태에서 TLS 1.3 연결을 확인했다. `kantboard-certbot-renew.timer`가 활성화돼 있고 마지막 갱신 작업의 종료 상태는 성공이었다. 확인 시 인증서 만료 시각은 2026-11-23 04:36:22 UTC이며 이후 갱신 결과는 운영 중 점검해야 한다.
+
+파일 업로드, 캐시, 부하 테스트와 EC2 전체 재부팅은 이번 구현/검증 범위에 포함하지 않는다.

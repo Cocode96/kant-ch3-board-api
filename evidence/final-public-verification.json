@@ -1,0 +1,33 @@
+{
+  "verified_at_utc": "2026-11-16T16:22:24.346625+00:00",
+  "removed_accounts_login_statuses": [
+    401,
+    401
+  ],
+  "health_status": 200,
+  "temporary_credentials_removed": true,
+  "tls": {
+    "protocol": "TLSv1.3",
+    "not_after": "Nov 23 04:36:22 2026 GMT",
+    "issuer": [
+      [
+        [
+          "countryName",
+          "US"
+        ]
+      ],
+      [
+        [
+          "organizationName",
+          "Let's Encrypt"
+        ]
+      ],
+      [
+        [
+          "commonName",
+          "YE1"
+        ]
+      ]
+    ]
+  }
+}

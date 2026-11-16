@@ -1,0 +1,47 @@
+{
+  "verified_at_utc": "2026-11-17T01:21:50.556158+09:00",
+  "python_version": "3.15.2",
+  "database_driver": "postgresql+asyncpg",
+  "checks": [
+    {
+      "name": "valid_server_signed_token_reaches_input_validation",
+      "passed": true,
+      "status": 422
+    },
+    {
+      "name": "correctly_signed_expired_jwt_rejected",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "name": "fixture_ids_and_exact_emails_match",
+      "passed": true
+    },
+    {
+      "name": "no_fixture_posts_before_account_cleanup",
+      "passed": true
+    },
+    {
+      "name": "only_two_fixture_accounts_deleted",
+      "passed": true
+    },
+    {
+      "name": "existing_accounts_preserved",
+      "passed": true
+    },
+    {
+      "name": "existing_posts_preserved",
+      "passed": true
+    },
+    {
+      "name": "private_backup_preserved",
+      "passed": true
+    }
+  ],
+  "postgresql_version": "PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit",
+  "remaining_fixture_users": 0,
+  "post_count_after_cleanup": 0,
+  "deployed_revision": "566b98a8eae82fcdeed763415be5dd2b6908d705",
+  "preserved_existing_account_count": 2,
+  "removed_fixture_account_count": 2
+}

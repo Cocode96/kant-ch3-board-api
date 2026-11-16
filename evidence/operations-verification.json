@@ -1,0 +1,41 @@
+{
+  "evidence_kind": "summary_of_observed_server_command_results",
+  "verified_date_kst": "2026-11-17",
+  "deployed_revision": "566b98a8eae82fcdeed763415be5dd2b6908d705",
+  "server_regression": {
+    "python_version": "3.15.2",
+    "command": ".venv/bin/python -B test_api.py",
+    "database": "isolated in-memory SQLite",
+    "tests_run": 10,
+    "failures": 0,
+    "warning": "Starlette httpx TestClient deprecation"
+  },
+  "backup_restore": {
+    "format": "pg_dump custom archive",
+    "target": "separate temporary PostgreSQL database",
+    "original_counts": {"users": 4, "posts": 0},
+    "restored_counts": {"users": 4, "posts": 0},
+    "temporary_database_removed": true,
+    "live_database_restored": false,
+    "retained_backup_directory_owner": "root",
+    "retained_backup_directory_mode": "700",
+    "retained_dump_mode": "600"
+  },
+  "restart_persistence": {
+    "scope": "kantboard.service restart, not EC2 reboot",
+    "pid_before": 6896,
+    "pid_after": 7316,
+    "post_count_before": 1,
+    "post_count_after": 1,
+    "updated_post_content_and_author_preserved": true
+  },
+  "services": {
+    "kantboard": "active",
+    "nginx": "active",
+    "postgresql": "active",
+    "certificate_renewal_timer": "active",
+    "last_certificate_renewal_service_result": "success",
+    "last_certificate_renewal_service_exit_status": 0,
+    "future_certificate_renewal_verified": false
+  }
+}
