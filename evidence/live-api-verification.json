@@ -1,0 +1,147 @@
+{
+  "base_url": "https://43.201.32.243",
+  "verified_at_utc": "2026-11-16T16:04:30.166280+00:00",
+  "run": "20261116T160430Z-42fcd3",
+  "checks": [
+    {
+      "name": "HTTPS /docs",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "HTTPS /openapi.json",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "signup_a",
+      "passed": true,
+      "status": 201
+    },
+    {
+      "name": "password_hash_hidden_a",
+      "passed": true
+    },
+    {
+      "name": "login_a",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "signup_b",
+      "passed": true,
+      "status": 201
+    },
+    {
+      "name": "password_hash_hidden_b",
+      "passed": true
+    },
+    {
+      "name": "login_b",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "anonymous_write_rejected",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "name": "bearer_challenge",
+      "passed": true
+    },
+    {
+      "name": "create",
+      "passed": true,
+      "status": 201
+    },
+    {
+      "name": "server_assigns_owner",
+      "passed": true
+    },
+    {
+      "name": "read_detail",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "read_list",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "other_put_forbidden",
+      "passed": true,
+      "status": 403
+    },
+    {
+      "name": "other_delete_forbidden",
+      "passed": true,
+      "status": 403
+    },
+    {
+      "name": "foreign_write_preserves_original",
+      "passed": true
+    },
+    {
+      "name": "owner_update",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "fresh_session_login",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "fresh_session_reads_saved_update",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "blank_title_rejected",
+      "passed": true,
+      "status": 422
+    },
+    {
+      "name": "forged_author_rejected",
+      "passed": true,
+      "status": 422
+    },
+    {
+      "name": "invalid_token_rejected",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "name": "invalid_parameter_/posts/0",
+      "passed": true,
+      "status": 422
+    },
+    {
+      "name": "invalid_parameter_/posts?limit=101",
+      "passed": true,
+      "status": 422
+    },
+    {
+      "name": "owner_delete",
+      "passed": true,
+      "status": 204
+    },
+    {
+      "name": "deleted_post_missing",
+      "passed": true,
+      "status": 404
+    }
+  ],
+  "remaining_fixture_post_ids": [],
+  "remaining_fixture_user_ids": [
+    3,
+    4
+  ],
+  "limitations": [
+    "Database engine and server restart persistence require server access",
+    "JWT expiration rejection is covered locally, not by this live run",
+    "Synthetic accounts require server-side cleanup; account deletion API does not exist"
+  ]
+}
